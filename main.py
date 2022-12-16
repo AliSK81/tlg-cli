@@ -17,10 +17,11 @@ async def always_typing(client, message: Message):
     try:
         while True:
             await message.reply_chat_action(ChatAction.TYPING)
-            time.sleep(5)
+            time.sleep(2)
+            await message.reply_chat_action(ChatAction.CANCEL)
     except Exception as e:
         with open('error.log', 'a+') as file:
-            file.writelines(e.__str__())
+            file.write(str(e))
 
 
 bot.run()
