@@ -14,8 +14,13 @@ bot = Client(
 
 @bot.on_message(filters.private)
 async def always_typing(client, message: Message):
-    while True:
-        await message.reply_chat_action(ChatAction.TYPING)
-        time.sleep(3)
+    try:
+        while True:
+            await message.reply_chat_action(ChatAction.TYPING)
+            time.sleep(5)
+    except Exception as e:
+        with open('error.log', 'a+') as file:
+            file.writelines(e.__str__())
+
 
 bot.run()
