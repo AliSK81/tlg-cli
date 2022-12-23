@@ -1,27 +1,88 @@
-import time
+import os
+import subprocess
 
 from pyrogram import Client, filters
-from pyrogram.enums import ChatAction
+from pyrogram.enums import ParseMode
+from pyrogram.errors import BadRequest
 from pyrogram.types import Message
 
 import config
 
-bot = Client(
+app = Client(
     name=config.name,
     api_id=config.api_id,
-    api_hash=config.api_hash)
+    api_hash=config.api_hash,
+    proxy=config.proxy if config.use_proxy else None)
 
 
-@bot.on_message(filters.private)
-async def always_typing(client, message: Message):
+@app.on_message((filters.private | filters.group) & filters.text)
+async def welcome(client, message: Message):
+    if message.text is None:
+        return
+
+    if config.auto_seen:
+        await read_history(message)
+    if message.text.startswith('txt'):
+        await send_txt(message)
+    if message.text.startswith('seen'):
+        await set_auto_seen(message)
+    if message.text.startswith('cmd'):
+        await execute(message)
+
+
+async def read_history(message: Message):
+    await app.read_chat_history(chat_id=message.chat.id)
+    await app.mark_chat_unread(chat_id=message.chat.id)
+
+
+async def send_txt(message: Message):
+    query = message.text.split('\n')
+    if len(query) < 3:
+        await message.reply_text(text='**txt\n<file name>\n<content>**', parse_mode=ParseMode.MARKDOWN)
+        return
+    name = query[1]
+    content = query[2:]
+    await send_txt_file(message, name, content)
+
+
+async def send_txt_file(message: Message, name: str, content: [str]):
+    doc = f'{name}.txt'
+    with open(file=doc, mode='w') as file:
+        file.writelines(content)
+    await message.reply_document(document=doc)
+    os.remove(doc)
+
+
+async def set_auto_seen(message: Message):
+    if not message.from_user.is_self:
+        return
+    config.auto_seen = False if message.text.endswith('off') else True
+
+
+async def execute(message: Message):
+    if not message.from_user.is_self:
+        return
+    cmd = message.text.split()[1:]
+    output = ''
     try:
-        while True:
-            await message.reply_chat_action(ChatAction.TYPING)
-            time.sleep(2)
-            await message.reply_chat_action(ChatAction.CANCEL)
+        temp = subprocess.Popen(args=cmd, stdout=subprocess.PIPE)
+        output = str(temp.communicate()[0])
+        output = output.replace(r'\n', '\n').replace(r'\r', '\r').strip()
+        await message.reply_text(output, parse_mode=ParseMode.MARKDOWN)
+
+    except BadRequest:
+        if output != '':
+            await send_txt_file(message, 'output', output.split('\n'))
     except Exception as e:
-        with open('error.log', 'a+') as file:
-            file.write(str(e))
+        await message.reply_text(str(e.args))
 
 
-bot.run()
+# def update_bio_job():
+#     pass
+#
+#
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(update_bio_job, 'interval', seconds=3)
+# scheduler.start()
+
+app.run()
