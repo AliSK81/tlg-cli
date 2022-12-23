@@ -82,10 +82,12 @@ async def execute(message: Message):
 
 
 async def download_link(message: Message):
+    msg = await message.reply_text('wait a sec..')
     query = message.text.split('\n')
-    name = query[1]
-    url = query[2]
+    url = query[1]
+    name = url.split('/')[-1]
     subprocess.call(['curl', '-o', name, url])
+    await msg.delete()
     await message.reply_document(name)
     os.remove(name)
 
