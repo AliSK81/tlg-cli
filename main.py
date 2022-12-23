@@ -44,7 +44,7 @@ async def read_history(message: Message):
 
 
 async def send_txt(message: Message):
-    query = re.split('\n|\\s+', message.text)
+    query = message.text.split('\n')
     if len(query) < 3:
         await message.reply_text(text='**txt\n<file name>\n<content>**', parse_mode=ParseMode.MARKDOWN)
         return
