@@ -1,5 +1,6 @@
 import os
 import subprocess
+import re
 
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
@@ -19,6 +20,8 @@ app = Client(
 async def welcome(client, message: Message):
     if message.text is None:
         return
+
+    message.text = message.text.lower()
 
     if config.auto_seen:
         await read_history(message)
@@ -40,7 +43,7 @@ async def read_history(message: Message):
 
 
 async def send_txt(message: Message):
-    query = message.text.split('\n')
+    query = re.split('\n|\\s+', message.text)
     if len(query) < 3:
         await message.reply_text(text='**txt\n<file name>\n<content>**', parse_mode=ParseMode.MARKDOWN)
         return
@@ -82,13 +85,17 @@ async def execute(message: Message):
 
 
 async def download_link(message: Message):
-    msg = await message.reply_text('wait a sec..')
-    query = message.text.split('\n')
+    query = re.split('\n|\\s+', message.text)
+    if len(query) < 2:
+        await message.reply_text(text='**dl <url>**', parse_mode=ParseMode.MARKDOWN)
+        return
     url = query[1]
     name = url.split('/')[-1]
-    subprocess.call(['curl', '-o', name, url])
-    await msg.delete()
+    msg = await message.reply_text('downloading..')
+    subprocess.call(['curl', '--max-filesize', '2147483648 ', '-o', name, url])
+    await msg.edit('uploading..')
     await message.reply_document(name)
+    await msg.delete()
     os.remove(name)
 
 
