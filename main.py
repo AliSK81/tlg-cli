@@ -94,12 +94,18 @@ async def download_link(message: Message):
     try:
         subprocess.call(['curl', '--max-filesize', '2147483648', '-o', name, url])
         await msg.edit('Uploading..')
-        await message.reply_document(name)
+        if name.endswith('.mp4') or name.endswith('.mkv'):
+            await message.reply_video(name)
+        elif name.endswith('.mp3'):
+            await message.reply_audio(name)
+        else:
+            await message.reply_document(name)
         await msg.delete()
     except Exception:
         await msg.edit('Bad URL')
     finally:
         os.remove(name)
+
 
 # def update_bio_job():
 #     pass
