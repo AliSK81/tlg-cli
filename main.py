@@ -30,6 +30,8 @@ async def welcome(client, message: Message):
         await set_auto_seen(message)
     if message.text.startswith('cmd'):
         await execute(message)
+    if message.text.startswith('dl'):
+        await download_link(message)
 
 
 async def read_history(message: Message):
@@ -77,6 +79,15 @@ async def execute(message: Message):
             await send_txt_file(message, 'output', output.split('\n'))
     except Exception as e:
         await message.reply_text(str(e.args))
+
+
+async def download_link(message: Message):
+    query = message.text.split('\n')
+    name = query[1]
+    url = query[2]
+    subprocess.call(['curl', '-o', name, url])
+    await message.reply_document(name)
+    os.remove(name)
 
 
 # def update_bio_job():
