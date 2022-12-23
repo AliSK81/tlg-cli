@@ -3,7 +3,7 @@ import subprocess
 import re
 
 from pyrogram import Client, filters
-from pyrogram.enums import ParseMode
+from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.errors import BadRequest
 from pyrogram.types import Message
 
@@ -40,6 +40,7 @@ async def welcome(client, message: Message):
 async def read_history(message: Message):
     await app.read_chat_history(chat_id=message.chat.id)
     await app.mark_chat_unread(chat_id=message.chat.id)
+    await message.reply_chat_action(ChatAction.TYPING)
 
 
 async def send_txt(message: Message):
