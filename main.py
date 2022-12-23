@@ -92,7 +92,7 @@ async def download_link(message: Message):
     url = query[1]
     name = url.split('/')[-1]
     msg = await message.reply_text('downloading..')
-    subprocess.call(['curl', '--max-filesize', '2147483648 ', '-o', name, url])
+    subprocess.call(['curl', '--max-filesize', '2147483648', '-o', name, url])
     await msg.edit('uploading..')
     await message.reply_document(name)
     await msg.delete()
