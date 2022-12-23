@@ -22,6 +22,8 @@ async def welcome(client, message: Message):
 
     if config.auto_seen:
         await read_history(message)
+    if message.text.startswith('ping'):
+        await message.reply_text('pong')
     if message.text.startswith('txt'):
         await send_txt(message)
     if message.text.startswith('seen'):
