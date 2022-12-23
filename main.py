@@ -21,8 +21,6 @@ async def welcome(client, message: Message):
     if message.text is None:
         return
 
-    message.text = message.text.lower()
-
     if config.auto_seen:
         await read_history(message)
     if message.text.startswith('ping'):
