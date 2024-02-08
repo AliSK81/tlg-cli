@@ -4,14 +4,13 @@ import re
 import subprocess
 from datetime import datetime
 
+import config
 from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.errors import BadRequest
 from pyrogram.errors import FloodWait
 from pyrogram.types import Message
-
-import config
 
 app = Client(
     name=config.name,
@@ -114,7 +113,11 @@ async def download_link(message: Message):
 async def update_bio_job():
     try:
         current_time = datetime.now().strftime("%H:%M")
-        await app.update_profile(bio=current_time)
+        if int(current_time.split(":")[1]) % 2 == 0:
+            bio_text = "Ali Ebrahimi"
+        else:
+            bio_text = "21 y.o"
+        await app.update_profile(bio=bio_text)
     except FloodWait as e:
         await asyncio.sleep(60)
 
