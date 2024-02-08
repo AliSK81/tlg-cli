@@ -113,8 +113,8 @@ async def download_link(message: Message):
 
 async def update_bio_job():
     try:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        await app.update_profile(current_time)
+        current_time = datetime.now().strftime("%H:%M")
+        await app.update_profile(bio=current_time)
     except FloodWait as e:
         await asyncio.sleep(60)
 
