@@ -6,7 +6,7 @@ from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client, filters
-from pyrogram.enums import ParseMode, ChatAction
+from pyrogram.enums import ParseMode
 from pyrogram.errors import BadRequest
 from pyrogram.errors import FloodWait
 from pyrogram.types import Message
@@ -119,8 +119,12 @@ async def update_bio_job():
         await asyncio.sleep(60)
 
 
+def update_bio_job_runner():
+    asyncio.run(update_bio_job())
+
+
 scheduler = BackgroundScheduler()
-scheduler.add_job(update_bio_job, 'interval', minutes=1)
-scheduler.start()
+scheduler.add_job(update_bio_job_runner, 'interval', minutes=1)
+await scheduler.start()
 
 app.run()
