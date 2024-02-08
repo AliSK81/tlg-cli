@@ -1,10 +1,14 @@
+import asyncio
 import os
-import subprocess
 import re
+import subprocess
+from datetime import datetime
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.errors import BadRequest
+from pyrogram.errors import FloodWait
 from pyrogram.types import Message
 
 import config
@@ -38,7 +42,7 @@ async def welcome(client, message: Message):
 async def read_history(message: Message):
     await app.read_chat_history(chat_id=message.chat.id)
     await app.mark_chat_unread(chat_id=message.chat.id)
-    await message.reply_chat_action(ChatAction.TYPING)
+    # await message.reply_chat_action(ChatAction.TYPING)
 
 
 async def send_txt(message: Message):
@@ -107,12 +111,16 @@ async def download_link(message: Message):
         os.remove(name)
 
 
-# def update_bio_job():
-#     pass
-#
-#
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(update_bio_job, 'interval', seconds=3)
-# scheduler.start()
+async def update_bio_job():
+    try:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        await app.update_profile(current_time)
+    except FloodWait as e:
+        await asyncio.sleep(60)
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(update_bio_job, 'interval', minutes=1)
+scheduler.start()
 
 app.run()
