@@ -125,6 +125,6 @@ def update_bio_job_runner():
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(update_bio_job_runner, 'interval', minutes=1)
-await scheduler.start()
+scheduler.start()
 
 app.run()
